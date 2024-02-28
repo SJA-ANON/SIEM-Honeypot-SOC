@@ -61,7 +61,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Confirm licensing 
 - Select **Next : Disks >**
 
-![](images/vm1.png)
+![](IMAGES/VM_Creation01.png)
 
 ### Disks 
 - Leave all defaults
