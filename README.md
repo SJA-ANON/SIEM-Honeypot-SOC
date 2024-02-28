@@ -29,7 +29,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 ## Step 1: Create a Microsoft Azure Subscription: [Azure](https://azure.microsoft.com/en-us/free/)
 > Free 200$ Credit for 30 days
 
-![](images/Azure_Subscription.png)
+![](IMAGES/Azure_Subscription.png)
 
 ## Step 2: Create a Honeypot Virtual Machine
 > Exposed Windows VM
