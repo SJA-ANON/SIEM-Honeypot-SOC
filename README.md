@@ -24,7 +24,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 
 
 ### Overview:
-![](images/SIEM%20Lab.png)
+![](IMAGES/SIEM%20Lab.png)
 
 ## Step 1: Create a Microsoft Azure Subscription: [Azure](https://azure.microsoft.com/en-us/free/)
 > Free 200$ Credit for 30 days
