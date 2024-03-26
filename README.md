@@ -42,14 +42,14 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Search for "virtual machines" 
 - Create > Azure virtual machine
 #### Project details
-- Create new resource group and name it (honeypotlab)
+- Create new resource group and name it (Honeypot-Lab)
 > A resource group is a collection of resources that share the same lifecycle, permissions, and policies.
 #### Instance details
 - Name your VM (honeypot-vm)
-- Select a recommended region ((US) East US 2)
+- Select a recommended region ((Asia Pacific) Central India)
 - Availability options: No infrastructure redundancy required
 - Security type: Standard
-- Image: Windows 10 Pro, version 21H2 - x62 Gen2
+- Image: Windows 10 Pro, version 22H2 - x64 Gen2
 - VM Architecture: x64
 - Size: Default is okay (Standard_D2s_v3 – 2vcpus, 8 GiB memory)
 #### Administrator account
@@ -77,7 +77,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Protocol: Any
 - Action: Allow
 - Priority: 100 (low)
-- Name: Anything (ALLOW_ALL_INBOUND)
+- Name: Anything (ALLOW_ANY_IN)
 - Select **Review + create**
 
 ![](images/network_sec_grp.png)
@@ -87,9 +87,9 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 ## Step 3: Create a Log Analytics Workspace
 - Search for "Log analytics workspaces"
 - Select **Create Log Analytics workspace**
-- Put it in the same resource group as VM (honeypotlab)
-- Give it a desired name (honeypot-log)
-- Add to same region (East US 2)
+- Put it in the same resource group as VM (Honeypot-Lab)
+- Give it a desired name (law-honeypot)
+- Add to same region (Central India)
 - Select **Review + create**
 
 ![](images/log_an_wrk.png)
