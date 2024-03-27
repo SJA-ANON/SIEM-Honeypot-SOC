@@ -153,7 +153,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 ![](IMAGES/Script_runs.PNG)
 
 - Make an account with [Free IP Geolocation API and Accurate IP Lookup Database](https://ipgeolocation.io/)
-> This account is free for 1000 API calls per day. Paying 15.00$ will allow 150,000 API calls per month.
+> This account is free for 1000 API calls per day.
 - Copy API key once logged in and paste into script line 2: `$API_KEY = "<API key>"`
 - Hit **Save**
 - Run the PowerShell ISE script (Green play button) in the virtual machine to continuously produce log data
@@ -183,7 +183,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 ![](IMAGES/Custom_logs.png)
 
 ## Step 10: Query the Custom Log
-- In Log Analytics Workspaces go to the created workspace (honeypot-log) > Logs
+- In Log Analytics Workspaces go to the created workspace (law-honeypot) > Logs
 - Run a query to see the available data (FAILED_RDP_WITH_GEO_CL)
 > May take some time for Azure to sync VM and Log Analytics
 
