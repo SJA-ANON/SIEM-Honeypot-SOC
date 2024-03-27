@@ -80,7 +80,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Name: Anything (ALLOW_ANY_IN)
 - Select **Review + create**
 
-![](images/network_sec_grp.png)
+![](IMAGES/inbound_any.png)
 
 > Configuring the firewall to allow traffic from anywhere will make the VM easily discoverable.
 
@@ -92,15 +92,15 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Add to same region (Central India)
 - Select **Review + create**
 
-![](images/log_an_wrk.png)
+![](IMAGES/Log_Analytics_Workspace.png)
 
 > The Windows Event Viewer logs will be ingested into Log Analytics workspaces in addition to custom logs with geographic data to map attacker locations.
 
 ## Step 4: Configure Microsoft Defender for Cloud
 - Search for "Microsoft Defender for Cloud"
-- Scroll down to "Environment settings" > subscription name > log analytics workspace name (log-honeypot)
+- Scroll down to "Environment settings" > subscription name > log analytics workspace name (law-honeypot)
 
-![](images/mcrsft_dfndr.png)
+![](IMAGES/Defender_azure.png)
 
 #### Settings | Defender plans
 - Cloud Security Posture Management: ON
@@ -108,26 +108,26 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - SQL servers on machines: OFF
 - Hit **Save**
 
-![](images/defender_plans.png)
-
 #### Settings | Data collection
 - Select "All Events" 
 - Hit **Save**
 
+![](IMAGES/Enable_all_events.png)
+
 ## Step 5: Connect Log Analytics Workspace to Virtual Machine
 - Search for "Log Analytics workspaces"
-- Select workspace name (log-honeypot) > "Virtual machines" > virtual machine name (honeypot-vm)
+- Select workspace name (law-honeypot) > "Virtual machines" > virtual machine name (honeypot-vm)
 - Click **Connect**
 
-![](images/log_an_vm_connect.png)
+![](IMAGES/Law_VM_Connect.png)
 
 ## Step 6: Configure Microsoft Sentinel
 - Search for "Microsoft Sentinel"
 - Click **Create Microsoft Sentinel**
-- Select Log Analytics workspace name (honeypot-log)
+- Select Log Analytics workspace name (law-honeypot)
 - Click **Add**
 
-![](images/sentinel_log.png)
+![](IMAGES/Add_Sentinel.png)
 
 ## Step 7: Disable the Firewall in Virtual Machine
 - Go to Virtual Machines and find the honeypot VM (honeypot-vm)
@@ -141,7 +141,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Hit **Apply** and **Ok**
 - Ping VM via Host's command line to make sure it is reachable `ping -t <VM IP>`
 
-![](images/defender_off.png)
+![](IMAGES/defender_off.png)
 
 ## Step 8: Scripting the Security Log Exporter
 - In VM open Powershell ISE
@@ -150,7 +150,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Select **New Script** in Powershell ISE and paste script
 - Save to Desktop and give it a name (Log_Exporter)
 
-![](images/powershell_script.png)
+![](IMAGES/Script_runs.PNG)
 
 - Make an account with [Free IP Geolocation API and Accurate IP Lookup Database](https://ipgeolocation.io/)
 > This account is free for 1000 API calls per day. Paying 15.00$ will allow 150,000 API calls per month.
@@ -158,7 +158,7 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Hit **Save**
 - Run the PowerShell ISE script (Green play button) in the virtual machine to continuously produce log data
 
-![](images/ipgeolocation.png)
+![](IMAGES/IP_geoloc.png)
 
 > The script will export data from the Windows Event Viewer to then import into the IP Geolocation service. It will then extract the latitude and longitude and then create a new log called failed_rdp.log in the following location: C:\ProgramData\failed_rdp.log
 
@@ -180,80 +180,41 @@ SIEM stands for Security Information and Event Management System. It is a soluti
 - Give the custom log a name and provide description (FAILED_RDP_WITH_GEO) and hit **Next**
 - Hit **Create**
 
-![](images/custom_log.png)
+![](IMAGES/Custom_logs.png)
 
 ## Step 10: Query the Custom Log
 - In Log Analytics Workspaces go to the created workspace (honeypot-log) > Logs
 - Run a query to see the available data (FAILED_RDP_WITH_GEO_CL)
 > May take some time for Azure to sync VM and Log Analytics
 
-![](images/failed_rdp_with_geo.png)
+![](IMAGES/Working_CL.png)
 
-## Step 11: Extract Fields from Custom Log 
-> The RawData within a log contains information such as latitude, longitude, destinationhost, etc. Data will have to be extracted to create separate fields for the different types of data
-- Right click any of the log results
-- Select **Extract fields from 'FAILED_RDP_WITH_GEO_CL'**
-- Highlight ONLY the value after the ":" 
-- Name the **Field Title** the name of the field of the value
-- Under **Field Type** select the appropriate data type
-- Hit **Extract**
-- If the search results data looks good click the **Save extraction** button
-- Do this for ALL available fields in RawData
-> NOTE: If one of the search results is not correct select **Modify this highlight** (upper right corner of result) and highlight the correct value. Otherwise go to **Custom logs > Custom fields** Accept warning of unsaved edits and delete field. Redo extraction for deleted field.
+## Step 11: Mapping the Data in Microsoft Sentinel
 
-![](images/data_extraction.png)
-
-## Step 12: Map Data in Microsoft Sentinel
-- Go to Microsoft Sentinel to see the Overview page and available events
-- Click on **Workbooks** and **Add workbook** then click **Edit**
-- Remove default widgets (Three dots > Remove)
-- Click **Add > Add query** 
-- Copy/Paste the following query into the query window and **Run Query**
-
-```KQL
-FAILED_RDP_WITH_GEO_CL | summarize event_count=count() by sourcehost_CF, latitude_CF, longitude_CF, country_CF, label_CF, destinationhost_CF
-| where destinationhost_CF != "samplehost"
-| where sourcehost_CF != ""
+1. Navigate to Microsoft Sentinel > Workbooks > Add workbook
+2. Edit the workbook and remove the default widgets
+3. Add a new query and paste the KQL query below:
+ 
 ```
-> Kusto Query Language (KQL) - Azure Monitor Logs is based on Azure Data Explorer. The language is designed to be easy to read and use with some practice writing queries and basic guidance.
+FAILED_RDP_WITH_GEO_CL | extend username = extract(@"username:([^,]+)", 1, RawData),
+         timestamp = extract(@"timestamp:([^,]+)", 1, RawData),
+         latitude = extract(@"latitude:([^,]+)", 1, RawData),
+         longitude = extract(@"longitude:([^,]+)", 1, RawData),
+         sourcehost = extract(@"sourcehost:([^,]+)", 1, RawData),
+         state = extract(@"state:([^,]+)", 1, RawData),
+         label = extract(@"label:([^,]+)", 1, RawData),
+         destination = extract(@"destinationhost:([^,]+)", 1, RawData),
+         country = extract(@"country:([^,]+)", 1, RawData)
+| where destination != "samplehost"
+| where sourcehost != ""
+| summarize event_count=count() by latitude, longitude, sourcehost, label, destination, country 
+```
+4. Run the Query!
+5. You can continue refreshing the map to display more failed RDP attacks. Here the honey pot has was ran over night.
+![Alt text](IMAGES/map.png)
 
-- Once results come up click the **Visualization** dropdown menu and select **Map**
-- Select **Map Settings** for additional configuration
-#### Layout Settings
-- **Location info using** > Latitude/Longitude
-- **Latitude** > latitude_CF
-- **Longitude** > longitude_CF
-- **Size by** > event_count
-#### Color Settings
-- **Coloring Type:** Heatmap 
-- **Color by** > event_count
-- **Aggregation for color** > Sum of values
-- **Color palette** > Green to Red
-#### Metric Settings
-- **Metric Label** > label_CF
-- **Metric Value** > event_count
-- Select **Apply** button and **Save and Close**
-- Save as "Failed RDP World Map" in the same region and under the resource group (honeypotlab)
-- Continue to refresh map to display additional incoming failed RDP attacks
-> NOTE: The map will only display Event Viewer's failed RDP attempts and not all the other attacks the VM may be receiving.
+## Wrapping up
 
-![](images/failed_rdp_map.png)
-
-> Event Viewer Displaying Failed RDP logon attemps. EventID 4625
-
-![](images/event_viewer.png)
-
-> Custom Powershell script parsing data from 3rd party API
-
-![](images/rdp_script.png)
-
-## Step 13: Deprovision Resources
-> VERY IMPORTANT - Do NOT skip!
-- Search for "Resource groups" > name of resource group (honeypotlab) > **Delete resource group**
-- Type the name of the resource group ("honeypotlab") to confirm deletion
-- Check the **Apply force delete for selected Virtual machines and Virtual machine scale sets** box
-- Select **Delete**
-
-![](images/delete_resource_group.png)
-
-> If resources are not deleted they will eat up the free credits and fees may start to accumulate.
+I hope you have enjoyed going through the lab, as much as I did! Don't forget to
+deprovision your Azure services when you have decided to stop gathering failed
+RDP attacks so you don't get charged!
